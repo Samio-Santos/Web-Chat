@@ -1,0 +1,5 @@
+db.sqlite3
+midias_users
+.vscode
+.venv
+__pycache__

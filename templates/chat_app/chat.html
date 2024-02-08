@@ -1,0 +1,500 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Online</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="{% static 'css_chat_app/chat_app.css' %}" />
+</head>
+
+<body>
+  <div class="chat-container">
+    <div class="user-info">
+      <i class="fas fa-users create-group-icon"></i>
+      <img id="profile" src="{{user.imagem.url}}" alt="{{user}}" />
+      <h2>{{user}}</h2>
+
+      <div class="search-container">
+        <button id="search-button" onclick="document.getElementById('id01').style.display='block'"
+          style="width:auto;"><i class="fas fa-search"></i> Pesquisar</button>
+      </div>
+
+      <div id="id01" class="modal">
+        <form class="modal-content animate" method="post">
+          {% csrf_token %}
+          <h1>Nova mensagem</h1>
+          <div id="selectedUsersDisplay"></div>
+          <div id="data" data-json="{{ users_profile|json_script }}"></div>
+          <div id="samio" data-json="{{ conversation_data|json_script }}"></div>
+  
+      
+          <input type="text" id="searchInput" oninput="searchUsers()" placeholder="Digite para pesquisar">
+
+          <div id="searchResults"></div>
+
+          <button type="submit" id="submitButton">Bate-papo </button>
+        </form>
+      </div>
+      
+      <div class="tabs">
+        <div class="tab" id="conversations-tab">Conversas<span class="badge">{{conversation_data|length}}</span></div>
+        <div class="tab" id="online-users-tab">Contatos <span class="badge">{{ users_online|length}}</span></div>
+        <div class="tab" id="groups-users-tab">Grupos</div>
+        <div class="tab" id="archive-users-tab">arquivadas <span class="badge">3</span></div>
+      </div>
+
+      <ul class="user-list conversations">
+        <!-- Lista de conversas com usuarios -->
+        {% if conversation_data %}
+          {% for message in conversation_data %}
+            {% if message.conversation == False %}
+              {% if message.username_sender == user.username or message.username == user.username %}
+                <li class="user-list-item">
+                  {% if message.username_sender == user.username and conversation_data|length == 1 or message.username_sender == user.username %}
+                    <img src="{{ message.photo }}" alt="{{ message.username }}" />
+                    
+                  {% else %}
+                    <img src="{{ message.photo_sender }}" alt="{{ message.username }}" />
+
+                  {% endif %}
+                  <!-- <p>{{message.notify.recipient.username}}</p>
+                  <p>{{message.notify.actor.username}}</p> -->
+                  {% if message.count_notify != 0 %}
+                    <small class="badge">{{message.count_notify}}</small>
+                  {% endif %}
+
+                  <div class="user-list-item-info">
+                    <h3>{{ message.username }}</h3>
+                    {% if message.content %}
+                      <p id="tagContent">{{ message.content }}</p>
+                    {% else %}
+                        <p>Enviou uma mídia...</p>
+                    {% endif %}
+
+                    {% if message.username_sender == user.username and conversation_data|length == 1 or message.username_sender == user.username %}
+                      <span style="display: none;">{{ message.token }}</span>
+                    
+                    {% else %}
+                      <span style="display: none;">{{ message.token_sender }}</span>
+                    
+                    {% endif %}
+                  </div>
+                </li>
+                <!-- Três pontos para o menu de contexto -->
+                <form action="{% url 'delete_or_archive' message.token %}" method="POST">
+                  {% csrf_token %}
+                  <div class="context-menu" >
+                    
+                    <div class="dot">
+                      <img src="{% static 'img/opcoes.png' %}" alt="opcoes-menu">
+                      <!-- Submenu -->
+                      <div class="submenu-conversation" style="display: none;">
+                        <input type="hidden" name="data" id="buttonClicked" value="">
+                        <span style="display: none;">{{ message.token }}</span>
+                        <!-- Adicione aqui os itens do submenu com ícones -->
+                        <button type="submit" name="Delete" value="Delete">
+                          <i class="fas fa-trash"></i>
+                          Excluir
+                        </button>
+
+                        <button type="submit" name="Archive" value="Archive">
+                          <i class="fas fa-archive"></i>
+                          Arquivar
+                        </button>
+                      </div>
+                    </div>
+                    
+                  </div>
+                </form>
+                <hr class="hr-line" />
+              {% endif %}
+            {% endif %}
+
+          {% endfor %}
+        {% else %}
+          <p id="none">Nenhuma conversa encontrada</p>
+        {% endif %}
+      </ul>
+
+      <ul class="user-list online hidden">
+        {% if users_online %}
+          {% for online in users_online %}
+            <div class="user-online">
+              <li class="user-list-item">
+                <img src="{{ online.photo.url }}" alt="{{ online.username }}" />
+                <div class="user-list-item-info">
+                  <h3>{{online.username}}</h3>
+
+                  <p>Online agora!</p>
+                  <span style="display: none;">{{online.token}}</span>
+
+                </div>
+              </li>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>Nenhum usuário online no momento</p>
+        {% endif %}
+      </ul>
+      
+      <ul class="user-list archive hidden">
+        <!-- Lista de conversas com usuarios -->
+        {% for message in conversation_data %}
+
+          {% if message.conversation %}
+            {% if message.username_sender == user.username or conversation_data|length == 1 %}
+              <li class="user-list-item">
+                <img src="{{ message.photo.url }}" alt="{{ message.username }}" />
+                <div class="user-list-item-info">
+                  <h3>{{ message.username }}</h3>
+                  <p>{{ message.content }}</p>
+                  <span style="display: none;">{{ message.token }}</span>
+                </div>
+              </li>
+              <!-- Três pontos para o menu de contexto -->
+              <form action="{% url 'delete_or_archive' message.token %}" method="POST">
+                {% csrf_token %}
+                <div class="context-menu" >
+                  <div class="dot">
+                    <img src="{% static 'img/opcoes.png' %}" alt="opcoes-menu">
+                    <!-- Submenu -->
+                    <div class="submenu-conversation" style="display: none;">
+                      <input type="hidden" name="data" id="buttonClicked" value="" >
+
+                      <span style="display: none;">{{ message.token }}</span>
+                      <!-- Adicione aqui os itens do submenu com ícones -->
+                      <button type="submit" value="Delete">
+                        <i class="fas fa-trash"></i>
+                        Excluir
+                      </button>
+
+                      <button type="submit" value="unarchive">
+                        <i class="fas fa-archive"></i>
+                        Desarquivar
+                      </button>
+                    </div>
+                  </div>
+                  
+                </div>
+              </form>
+              <hr class="hr-line" />    
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+    </div>
+
+    <div class="chat-content">
+      <!-- No corpo do HTML, dentro da div "chat-header" -->
+
+      <div class="chat-header" id="chat-header">
+        <img src="{{receiver_imagem.url}}" alt="User 1" class="user-avatar" id="user-avatar" />
+        <h2 class="user-name" id="user-name">{{receiver}}</h2>
+        <!-- Ícone de engrenagem -->
+        <div class="settings-icon" onclick="toggleSettingsMenu()">
+          <i class="fas fa-cog"></i>
+
+          <!-- Submenu de configurações -->
+          <div class="settings-submenu" style="display: none;">
+            <div>Configuração 1</div>
+            <div>Configuração 2</div>
+            <div>Configuração 3</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        {{ room_name|json_script:"room-name" }}
+        {% for message in messages_data %}
+          {% if message.sender != user.username %}
+            <!-- Mensagem enviada por você -->
+            <div class="message message-sender">
+              <img class="user-img" src="{{ message.sender_img.url }}" alt="{{ message.sender }}" />
+              <div class="message-info">
+                <span>{{ message.sender }} • {{ message.timestamp }}</span>
+              </div> 
+              <div class="message-text">
+
+                {% if message.media %}
+                  <img id="myImg" src="{{ message.media.url }}" alt="" style="width:200px;max-width:200px;margin-left: 60px;">
+      
+                  <div id="myFile" class="file">
+                    <span class="close">&times;</span>
+                    <img class="modal-content" id="imgfile" alt="media-">
+                  </div> 
+                {% endif %}
+                  
+                {% if message.file %}
+                  <div class="pdf-container">
+                    <!-- Botão com link para o PDF -->
+                    <a class="pdf-button" href="{{message.file.url}}" target="_blank">
+                      <!-- Imagem do PDF -->
+                      <img class="pdf-image" src="{% static 'img/pdf.png' %}" alt="pdf-file" style="margin-left:-5px;">
+                      <div>
+                        <span class="pdf-name">{{message.file}}</span>
+                      </div>
+                    </a>
+                  </div>
+                {% endif %}
+
+                {% if message.video %}
+                  <video width="100%"controls>
+                    <source src="{{message.video.url}}">
+                    Seu navegador não suporta o elemento de vídeo.
+                  </video>
+                {% endif %}
+
+                {% if message.content %}
+                  <p>{{ message.content }}</p>
+                {% endif %}
+
+              </div>
+            </div>
+
+          {% else %}
+            <!-- Mensagem recebida por você -->
+            <div class="message message-recipient">
+              <img class="user-img" src="{{ message.sender_img.url }}" alt="{{ message.receiver }}" />
+              <div class="message-info">
+                <span id="span1">{{ message.sender }} • {{ message.timestamp }}</span>
+              </div>
+              <div class="message-text">
+
+                {% if message.media %}
+                  <img id="myImg" src="{{ message.media.url }}" alt="" style="width:200px;max-width:200px;margin-left: 60px;">
+      
+                  <div id="myFile" class="file">
+                    <span class="close">&times;</span>
+                    <img class="modal-content" id="imgfile" alt="media-">
+                  </div> 
+                {% endif %}
+                  
+                {% if message.file %}
+                  <div class="pdf-container">
+                    <!-- Botão com link para o PDF -->
+                    <a class="pdf-button" href="{{message.file.url}}" target="_blank">
+                      <!-- Imagem do PDF -->
+                      <img class="pdf-image" src="{% static 'img/pdf.png' %}" alt="pdf-file" style="margin-left:-5px;">
+                      <div>
+                        <span class="pdf-name">{{message.file}}</span>
+                      </div>
+                    </a>
+                  </div>
+                {% endif %}
+
+                {% if message.video %}
+                  <video width="100%" controls>
+                    <source src="{{message.video.url}}">
+                    Seu navegador não suporta o elemento de vídeo.
+                  </video>
+                {% endif %}
+
+                {% if message.content %}
+                  <p>{{ message.content }}</p>
+                {% endif %}
+
+                {% if message.is_read %}
+                  <div class="read-recipient" title="Vista ha 2h">
+                    <i class="fas fa-check-double" style="color: rgb(0, 0, 255);"></i>
+                  </div>
+                {% else %}
+                  <div class="read-recipient" title="Entregue há 2h">
+                    <i class="fas fa-check-double" style="color: black;"></i>
+                  </div>
+                {% endif %}
+              </div>
+          
+            </div>
+            
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div id="selectedMedia"></div>
+
+      <div class="chat-input">
+        <div class="file-input">
+
+          <button class="submenu-trigger" id="submenu-icon" onclick="toggleSubmenu()"><i class="fas fa-plus"
+              ></i></button>
+
+          <div class="submenu" id="submenu">
+            <label>
+              <button onclick="activateInput('imageInput')"><i class="fas fa-image"></i> Imagem</button>
+              <input type="file" id="imageInput" style="display: none;" accept="image/*"
+                onchange="selectMedia('image', this)">
+            </label>
+
+            <label>
+              <button onclick="activateInput('videoInput')"><i class="fas fa-file-video"></i> Vídeo</button>
+              <input type="file" id="videoInput" style="display: none;" accept="video/*"
+                onchange="selectMedia('video', this)">
+            </label>
+
+            <label>
+              <button onclick="activateInput('pdfInput')"><i class="fas fa-file-pdf"></i> PDF</button>
+              <input type="file" id="pdfInput" style="display: none;" accept=".pdf" onchange="selectMedia('pdf', this)">
+            </label>
+          </div>
+
+        </div>
+
+        <button class="emoji-button"><i class="far fa-smile"></i></button>
+
+        <textarea id="message-input" placeholder="Digite sua mensagem..."></textarea>
+        <button class="send-button" id="chat-message-submit">Enviar</button>
+      </div>
+
+      <div class="inner-div" style="display: none;">
+        <img style="height: 150px;" src="{% static 'img/bate-papo.png' %} " alt="icone-message">
+        <h4>Suas mensagens</h3>
+          <span>Envie fotos, arquivos, videos e mensagens privadas para um amigo</span>
+          <button id="search-button" onclick="document.getElementById('id01').style.display='block'"
+            style="width:auto;">Enviar mensagem</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const currentUser = "{{ user.token }}";
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+    const chatSocket = new WebSocket(
+      "ws://" + window.location.host + "/ws/chat/" + roomName + "/"
+    );
+
+    chatSocket.onmessage = function (e) {
+      const data = JSON.parse(e.data);
+
+
+      // Verifique se há um erro na mensagem recebida
+      if (data.error) {
+        console.error("Error received:", data.error);
+        // Adote a lógica apropriada para lidar com mensagens de erro no seu aplicativo
+        return;
+      }
+
+      // Verifique se há dados válidos na mensagem
+      if (data.sender != "{{user.username}}") {
+        addMessageToChat(document.querySelector(".chat-messages"), data, 'message-sender');
+        addConversation(data)
+
+      } else {
+        addMessageToChat(document.querySelector(".chat-messages"), data, 'message-recipient');
+        addConversation(data)
+      }
+    };
+
+    chatSocket.onclose = function (e) {
+      console.error("Chat socket closed unexpectedly");
+    };
+
+    document.querySelector("#message-input").focus();
+    document.querySelector("#message-input").onkeyup = function (e) {
+      if (e.key === "Enter") {
+
+        // enter, return
+        document.querySelector("#chat-message-submit").click();
+      }
+    };
+
+    document.querySelector("#chat-message-submit").onclick = function (e) {
+      const messageInputDom = document.querySelector("#message-input");
+      const message = messageInputDom.value;
+      const selectedMediaContainer = document.getElementById("selectedMedia");
+      const selectedMedia = selectedMediaContainer.textContent.trim();
+
+      // Envie apenas mensagens não vazias
+      if (message.trim() !== "") {
+        chatSocket.send(
+          JSON.stringify({
+            message: message,
+            receiver_id: roomName, // Substitua pelo ID do destinatário correto
+          })
+          
+          );
+      }
+      messageInputDom.value = "";
+      selectedMediaContainer.innerHTML = ""
+    };
+
+  </script>
+
+
+  <script src="{% static 'scripts/script.js' %}"></script>
+
+  
+  <script>
+    // Decodificar as entidades HTML e converter para objeto JavaScript
+    const userDataString = document.getElementById('samio').innerText
+    const userData = JSON.parse(userDataString.replace('">', ""));
+
+
+    // // Iterar sobre cada objeto no array
+    for (var i = 0; i < userData.length; i++) {
+
+    console.log(userData[i])
+    }
+
+    // Agora você pode usar a variável conversationData como um objeto JavaScript
+    // console.log(conversationData);
+  </script>
+
+  <script>  
+    // Chama a função passando a variável como argumento
+    document.addEventListener("DOMContentLoaded", function () {
+      var userList = document.querySelectorAll(".user-list");
+      var innerDiv = document.querySelector(".inner-div");
+      var chatInput = document.querySelector(".chat-input");
+      var chatMessages = document.getElementById("chat-messages");
+      var chatHeader = document.getElementById("chat-header");
+      var userAvatar = document.getElementById("user-avatar");
+      var userName = document.getElementById("user-name");
+
+      // se o usuario for o mesmo do sistema, ativa a innerDiv
+      if ("{{user.username}}" === userName.textContent) {
+        innerDiv.style.display = "block";
+
+        // Obtém a referência do elemento com a classe 'chat-content'
+        const chatContent = document.querySelector(".chat-content");
+        // Aplica estilos usando JavaScript
+        chatContent.style.display = "flex";
+        chatContent.style.alignItems = "center";
+        chatContent.style.justifyContent = "center";
+
+        chatHeader.style.display = "none";
+        chatInput.style.display = "none";
+        chatMessages.style.display = "none";
+      }
+
+      userList.forEach(function (userItem) {
+        userItem.addEventListener("click", function (event) {
+
+          if (event.target.closest(".user-list-item")) {
+            var selectedUserToken = event.target
+              .closest(".user-list-item")
+              .querySelector("span").textContent;
+
+
+            host = window.location.host;
+            
+            // Atualiza a foto e o nome do usuário na chat-header
+            var selectedUserAvatar = event.target
+              .closest(".user-list-item")
+              .querySelector("img").src;
+
+            userAvatar.src = selectedUserAvatar;
+
+            window.location.href = `http://${host}/chat/${selectedUserToken}/?mark=True`;
+          }});
+      });
+    });
+  </script>
+</body>
+
+</html>

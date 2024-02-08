@@ -1,0 +1,77 @@
+<!-- chat/templates/chat/room.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Room</title>
+  </head>
+  <body>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br />
+    <input id="chat-message-input" type="text" size="100" /><br />
+    <input id="chat-message-submit" type="button" value="Send" />
+
+    {{ room_name|json_script:"room-name" }}
+    <script>
+
+      
+      const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+      const chatSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/chat/" + roomName + "/"
+      );
+
+      chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+
+
+        // Verifique se há um erro na mensagem recebida
+        if (data.error) {
+          console.error("Error received:", data.error);
+          // Adote a lógica apropriada para lidar com mensagens de erro no seu aplicativo
+          return;
+        }
+
+        // Verifique se há dados válidos na mensagem
+        if (data.message && data.sender) {
+          document.querySelector("#chat-log").value +=
+            data.sender + ": " + data.message + "\n";
+
+            
+        } else {
+          console.error("Invalid message format received:", data);
+        }
+      };
+
+
+      chatSocket.onclose = function (e) {
+        console.error("Chat socket closed unexpectedly");
+      };
+
+      document.querySelector("#chat-message-input").focus();
+      document.querySelector("#chat-message-input").onkeyup = function (e) {
+        if (e.key === "Enter") {
+          // enter, return
+          document.querySelector("#chat-message-submit").click();
+        }
+      };
+
+      document.querySelector("#chat-message-submit").onclick = function (e) {
+        const messageInputDom = document.querySelector("#chat-message-input");
+        const message = messageInputDom.value;
+
+        // Envie apenas mensagens não vazias
+        if (message.trim() !== "") {
+          chatSocket.send(
+            JSON.stringify({
+              message: message,
+              receiver_id: roomName, // Substitua pelo ID do destinatário correto
+            })
+          );
+        }
+        messageInputDom.value = "";
+
+      };
+    </script>
+  </body>
+</html>
