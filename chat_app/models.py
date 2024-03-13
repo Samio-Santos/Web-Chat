@@ -34,3 +34,5 @@ class Message(models.Model):
     def __str__(self):
         return f"sender: {self.sender.username} receiver: {self.receiver.username}"
 
+
+

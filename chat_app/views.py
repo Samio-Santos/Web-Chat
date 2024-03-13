@@ -1,22 +1,21 @@
 from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404
 from urllib.parse import urlparse
+from django.contrib.auth.decorators import login_required
+
 from .models import Message, Conversation
 from accounts.models import ProfileUser
 from django.db.models import Q
-from collections import defaultdict
-from operator import itemgetter
 from notifications.models import Notification
 
 def index(request, room_name):
     return render(request, "chat_app/room.html", {"room_name": room_name})
 
-
+@login_required(redirect_field_name='#usu@rio$',login_url='login')
 def room(request, token):
     # Dicionário para armazenar os dados que serão enviados para o template
     data = {}
     mark_all = request.GET.get('mark')
-
     # Lista para armazenar os dados de cada mensagem
     messages_data = []
   
@@ -82,9 +81,8 @@ def room(request, token):
 
             conversation_all_to = Conversation.objects.filter(Q(owner=user_sender, user1=user_sender, user2=cv.user2.id, is_active=True)).first()
 
+            msgUser = Message.objects.filter(Q(conversation=conversation_all_to, sender=user_sender)).order_by('-timestamp').first()
 
-            msgUser = Message.objects.filter(Q(conversation=conversation_all_to)).last()
-            
             if msgUser:
                 # conta quantas message o user logado no sistema recebeu de outro usuario especifico
                 count_notify = Notification.objects.unread().filter(Q(recipient__username=user_sender, actor_object_id=cv.user2.id)).count()
@@ -135,7 +133,6 @@ def room(request, token):
             
     # Adiciona os dados ao dicionário principal
     data['messages_data'] = messages_data
-    # data['is_read'] = sorted(messages_data, key=lambda x: x['timestamp'], reverse=True)[0]['is_read']
     data['conversation_data'] = sorted(conversation_data, key=lambda x: x['timestamp'], reverse=True)
     data['users_profile'] = users_profile
     data['users_online'] = contant_online
@@ -150,11 +147,14 @@ def room(request, token):
 def delete_or_archive(request, token_user):
     delete_or_archive = request.POST.get("data")
 
+    print(delete_or_archive)
+    print(token_user)
+    
     user = get_object_or_404(ProfileUser, username=request.user)
     receiver = get_object_or_404(ProfileUser, token=token_user)
 
 
-    # Salve o caminho do usuário antes de desativar as conversas
+    # Salva o caminho do usuário antes de desativar as conversas
     current_url = urlparse(request.build_absolute_uri()).hostname
     port = urlparse(request.build_absolute_uri()).port
 

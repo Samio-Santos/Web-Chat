@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 
 <head>
   <meta charset="UTF-8" />
@@ -32,7 +32,7 @@
           <div id="samio" data-json="{{ conversation_data|json_script }}"></div>
   
       
-          <input type="text" id="searchInput" oninput="searchUsers()" placeholder="Digite para pesquisar">
+          <input type="text" id="searchInput" oninput="searchUsers()" placeholder="Pesquisar ou começar uma conversa">
 
           <div id="searchResults"></div>
 
@@ -94,6 +94,7 @@
                       <!-- Submenu -->
                       <div class="submenu-conversation" style="display: none;">
                         <input type="hidden" name="data" id="buttonClicked" value="">
+                        
                         <span style="display: none;">{{ message.token }}</span>
                         <!-- Adicione aqui os itens do submenu com ícones -->
                         <button type="submit" name="Delete" value="Delete">
@@ -102,7 +103,7 @@
                         </button>
 
                         <button type="submit" name="Archive" value="Archive">
-                          <i class="fas fa-archive"></i>
+                          <i class="fas fa-archive" ></i>
                           Arquivar
                         </button>
                       </div>
@@ -189,6 +190,12 @@
 
     </div>
 
+    <div class="logout">
+      <a href="{% url 'logout' %}">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+
     <div class="chat-content">
       <!-- No corpo do HTML, dentro da div "chat-header" -->
 
@@ -266,7 +273,7 @@
               <div class="message-text">
 
                 {% if message.media %}
-                  <img id="myImg" src="{{ message.media.url }}" alt="" style="width:200px;max-width:200px;margin-left: 60px;">
+                  <img id="myImg" src="{{ message.media.url }}" alt="">
       
                   <div id="myFile" class="file">
                     <span class="close">&times;</span>
@@ -344,9 +351,10 @@
 
         </div>
 
-        <button class="emoji-button"><i class="far fa-smile"></i></button>
+        <button class="emoji-button"><i class="far fa-smile" style="pointer-events: none;"></i></button>
 
         <textarea id="message-input" placeholder="Digite sua mensagem..."></textarea>
+
         <button class="send-button" id="chat-message-submit">Enviar</button>
       </div>
 
@@ -361,6 +369,7 @@
   </div>
 
   <script>
+
     const currentUser = "{{ user.token }}";
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
@@ -427,8 +436,22 @@
 
 
   <script src="{% static 'scripts/script.js' %}"></script>
+  <script src="{% static 'scripts/vanillaEmojiPicker.js' %}"></script>
+  <script>
+    new EmojiPicker({
+        trigger: [
+            {
+                insertInto: '#message-input',
+                selector: '.emoji-button'
+            }
+        ],
+        closeButton: true,
+        dragButton: true,
+      
+    })
+  </script>
 
-  
+
   <script>
     // Decodificar as entidades HTML e converter para objeto JavaScript
     const userDataString = document.getElementById('samio').innerText

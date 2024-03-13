@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="{% static 'img/Secureway- Logotipo-01.svg' %}" />
+    <link rel="stylesheet" href="{% static 'css_accounts_app/login.css' %}" />
+    <title>Signed Out | Web Chat</title>
+  </head>
+  <body>
+    <!-- {% if valid %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="{{ message.tags }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endif %} -->
+    <main>
+      <section>
+        <div class="container1">
+          <img src="{% static 'img/bate-papo.png' %}" alt="logo-chat" />
+        </div>
+
+        <div class="container2">
+          <form action="{% url 'login' %}" id="form-login" method="POST" name="form-login">
+            {% csrf_token %}
+            <fieldset class="container">
+              <div class="box">
+                <img id="icon" src="{% static 'img/user.png' %}" alt="Login" />
+
+                <div class="user">
+                  <i class="fas fa-user"></i>
+                  <input
+                    type="text"
+                    name="user"
+                    value="{{request.POST.user}}"
+                    id="username"
+                    placeholder="Username"
+                
+                    required
+                  />
+                  <!-- {% if invalid %}
+                    {% if messages %}
+                      {% for message in messages %}
+                        <div class="{{ message.tags }}input" role="alert">
+                          {{ message }}
+                        </div>
+                      {% endfor %}
+                    {% endif %}
+                  {% endif %} -->
+                </div>
+                
+                <div class="user">
+                  <i class="fas fa-unlock-alt"></i>
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    maxlength="45"
+                
+                    placeholder="Password"
+                    autocomplete="on"
+                    required
+                  />
+
+                  <img
+                    id="hide"
+                    src="{% static 'img/escondido.png' %}"
+                    alt="MostraSenha"
+                    onclick="mostraSenha()"
+                  />
+                  <!-- {% if invalid %}
+                    {% if messages %}
+                      {% for message in messages %}
+                        <div class="{{ message.tags }}input" role="alert">
+                          {{ message }}
+                        </div>
+                      {% endfor %}
+                    {% endif %}
+                  {% endif %} -->
+                </div>
+
+                <div class="login-bnt">
+                  <button class="bnt" type="submit" name="enter">Entrar</button>
+                </div>
+
+                <div class="login-bnt">
+                  <a href="{% url 'register' %}" class="bnt1" type="button">Registre-se</a>
+                </div>
+
+                <div class="reset-password">
+                  <a href="#">Esqueceu a senha</a>
+                </div>
+              </div>
+              
+            </fieldset>
+          </form>
+        </div>
+      </section>
+    </main>
+    <script src="{% static 'scripts/script.js' %}"></script>
+  </body>
+</html>

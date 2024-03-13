@@ -1,3 +1,18 @@
+function mostraSenha() {
+  var senha = document.getElementById("password");
+  var iconSenha = document.getElementById("hide");
+
+  if (senha.type === "password") {
+    senha.type = "text";
+    iconSenha.src = "/static/img/mostrar.png";
+  } else {
+    senha.type = "password";
+    iconSenha.src = "/static/img/escondido.png";
+  }
+}
+
+
+
 // Função enviar dados para a views delete_or_archive
 document.addEventListener("DOMContentLoaded", function () {
   var conversationsTab = document.getElementById("conversations-tab");

@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <title>Cadastro</title>
+    <link rel="icon" href="{% static 'img/universidade.png' %}">
+    <link rel="stylesheet" href="{% static 'css_accounts_app/menu.css' %}" />
+    <link rel="stylesheet" href="{% static 'css_accounts_app/register.css' %}" />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <a href="{% url 'login' %}">
+          <h1>Cadastro</h1>
+          <img id="icone-login" src="{% static 'img/cadastro.png' %}" alt="cadastro" />
+        </a>
+      </div>
+    </header>
+    <main>
+      <form action="{% url 'register' %}" method="POST" name="form-login">
+        {% csrf_token %}
+        <fieldset>
+          <!-- {% if messages %}
+            {% for message in messages %}
+              <div class="{{ message.tags }}" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %} -->
+          <div class="input-block">
+            <label for="nome">Nome: </label><br />
+            <input type="text" name="nome" value="{{request.POST.nome}}" id="nome" />
+          </div>
+
+          <div class="input-block">
+            <label for="Snome">Sobrenome:</label><br />
+            <input type="text" name="Snome" value="{{request.POST.Snome}}" id="Snome" />
+          </div>
+
+          <div class="input-block">
+            <label for="email">E-mail:</label><br />
+            <input type="email" name="email" value="{{request.POST.email}}" id="email" />
+          </div>
+
+          <div class="input-block">
+            <label for="sexo">Sexo:</label><br />
+            <select id="sexo" name="sexo">
+              <option value="None" selected disabled>selecione o sexo:</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+            </select>
+          </div>
+
+          <div class="input-block">
+            <label for="password">Senha:</label><br />
+            <input type="password" name="password" id="id_new_password1" maxlength="48"/>
+          </div>
+          
+          <div class="input-block">
+            <label for="Rsenha">Repetir senha:</label><br />
+            <input type="password" name="Rsenha" id="id_new_password2" maxlength="48"/>
+          </div>
+          
+          <div id="Valid-password">
+            <h3>A senha deve conter o seguinte:</h3>
+            <p id="capital" class="invalid">Uma letra <b>maiúscula</b></p>
+            <p id="letter" class="invalid">Uma letra <b>minúscula</b></p>
+            <p id="number" class="invalid">Um<b> numero</b></p>
+            <p id="length" class="invalid">Mínimo <b>8 caracteres</b></p>
+            <p id="repeat-password" class="invalid">As<b> Senhas</b> são iguais</p>
+          </div>
+
+        </fieldset>
+
+        <button type="submit" name="button" title="Cadastrar">Cadastrar</button>
+      </form>
+      
+      <footer>
+        <p>&copy; | Desenvolvido por Samio Santos</p>
+      </footer>
+    </main>
+  <script src="{% static 'scripts/script.js' %}"></script>
+  </body>
+</html>

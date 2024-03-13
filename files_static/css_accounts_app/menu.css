@@ -1,0 +1,57 @@
+/*Menu */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+header {
+  width: 100%;
+  height: 4rem;
+  font-family: sans-serif;
+  background-color: rgba(0, 0, 0, 0.61);
+  position: fixed;
+  display: flex;
+  justify-content: space-between;
+  z-index: 1;
+}
+
+.container a {
+  text-decoration: none;
+}
+
+.container h1 {
+  font-size: 20px;
+  font-weight: bold;
+  height: 1.4rem;
+  margin-left: 1rem;
+  margin-top: 1.29rem;
+  color: white;
+}
+
+.container #icone-login {
+  position: absolute;
+  right: 0;
+  top: 1rem;
+  height: 2.5rem;
+  margin-right: 2rem;
+}
+
+/* Rodape */
+footer {
+  position: relative;
+  bottom: 0;
+  padding: 27px;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.61);
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
+}
+
+@media (min-width: 700px) {
+  .container #logo {
+    height: 30px;
+  }
+}

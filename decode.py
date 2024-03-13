@@ -10,8 +10,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chat_app.settings")
 # Carregue as configurações do Django
 setup()
 def save_base64_image(user, type, encoded_image, save_directory=settings.MEDIA_ROOT):
-
-    print(save_directory)
     try:
         mime_type = type
         subtype = mime_type.split("/")
@@ -43,8 +41,6 @@ def save_base64_image(user, type, encoded_image, save_directory=settings.MEDIA_R
     
         # Combine o nome do arquivo com o diretório de salvamento
         save_path = os.path.join(save_directory, file_name)
-        print(save_directory)
-
         
         # Salve os bytes decodificados em um arquivo
         with open(save_path, 'wb') as file:
